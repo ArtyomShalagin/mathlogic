@@ -7,6 +7,7 @@ public class BinExpression extends Expression {
         super(op);
         this.left = left;
         this.right = right;
+        hash = left.hashCode() * 2772 + right.hashCode() * 27643 + op.hashCode() * 3462;
     }
 
     public String toString() {
@@ -29,10 +30,6 @@ public class BinExpression extends Expression {
     }
 
     public boolean equals(BinExpression e) {
-        return op == e.op && left.equals(e.left) && right.equals(e.right);
-    }
-
-    public int hashCode() {
-        return left.hashCode() * 2772 + right.hashCode() * 27643 + op.hashCode() * 3462;
+        return e.hashCode() == hashCode() && op == e.op && left.equals(e.left) && right.equals(e.right);
     }
 }

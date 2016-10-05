@@ -13,15 +13,11 @@ public class Parser {
     Stack<Integer> virtualBrackets;
 
     public Parser(String expr) {
-        this.expr = prepare(expr);
+        this.expr = expr.toCharArray();
         p = 0;
         variables = new HashMap<>();
         factorNumber = 0;
         virtualBrackets = new Stack<>();
-    }
-
-    char[] prepare(String source) {
-        return source.replaceAll(" |-", "").toCharArray();
     }
 
     public Expression parse() {

@@ -6,6 +6,7 @@ public class UnExpression extends Expression {
     public UnExpression(Operator op, Expression arg) {
         super(op);
         this.arg = arg;
+        hash = op.hashCode() * 67432 + arg.hashCode() * 76424;
     }
 
     public boolean equals(Object o) {
@@ -13,11 +14,7 @@ public class UnExpression extends Expression {
     }
 
     public boolean equals(UnExpression e) {
-        return op == e.op && arg.equals(e.arg);
-    }
-
-    public int hashCode() {
-        return op.hashCode() * 67432 + arg.hashCode() * 76424;
+        return e.hashCode() == hashCode() && op == e.op && arg.equals(e.arg);
     }
 
     public String toString() {

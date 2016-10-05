@@ -8,6 +8,7 @@ public class Variable extends Expression {
         super(null);
         this.number = number;
         this.name = name;
+        hash = 762367 * name.hashCode();
     }
 
     public boolean equals(Object o) {
@@ -16,12 +17,6 @@ public class Variable extends Expression {
 
     public boolean equals(Variable e) {
         return name.equals(e.name);
-    }
-
-    public int hashCode() {
-        return
-//                67834 * number +
-                762367 * name.hashCode();
     }
 
     public String toString() {

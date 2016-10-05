@@ -1,31 +1,31 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Scanner in = new Scanner(new File("input.txt"));
-        String header = in.nextLine();
-        String axioms = header.substring(0, header.indexOf("|-"));
+        long start = System.currentTimeMillis();
+        BufferedReader in = new BufferedReader(new FileReader(new File("input.txt")));
+        String header = in.readLine();
+        String axioms = header.substring(0, header.indexOf("|-")).replaceAll("\\s|-", "");
         ArrayList<String> assumptionList = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(axioms, ",");
         while (st.hasMoreTokens()) {
-            String s = st.nextToken().replaceAll("\\s", "");
-            assumptionList.add(s);
+            assumptionList.add(st.nextToken());
         }
-        String target = header.substring(header.indexOf("|-") + 2).replaceAll("\\s", "");
+//        String target = header.substring(header.indexOf("|-") + 2);
         ArrayList<String> proof = new ArrayList<>();
-        while (in.hasNextLine()) {
-            String s = in.nextLine().replaceAll("\\s", "");
-            proof.add(s);
+        String line;
+        while ((line = in.readLine()) != null) {
+            proof.add(line.replaceAll("\\s|-", ""));
         }
+
+        System.out.println((System.currentTimeMillis() - start) + "ms, input read");
 
         ArrayList<String> result = new Validator(assumptionList, proof).validate();
         PrintWriter out = new PrintWriter(new File("output.txt"));
         result.stream().forEach(out::println);
         out.close();
+        System.out.println((System.currentTimeMillis() - start) + "ms total, done");
     }
 }

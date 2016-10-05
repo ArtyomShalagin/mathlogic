@@ -1,26 +1,32 @@
+import data_struct.ArrayBox;
 import data_struct.Pair;
 import expression.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class Validator {
-    private HashMap<Expression, ArrayList<Pair<Expression, Integer>>> mp;
-    private ArrayList<Expression> assumptions, proved, proof;
-    private HashSet<Expression> provedSet;
-    private ArrayList<String> proofStrings;
-    private ArrayList<String> result;
+    private HashMap<Expression, ArrayBox<Pair<Expression, Integer>>> mp;
+    private ArrayList<Expression> proof;
+    private HashMap<Expression, Integer> assumptions;
+    private HashMap<Expression, Integer> proved;
+    private ArrayList<String> proofStrings, result;
 
     public Validator(ArrayList<String> assumptionStrings, ArrayList<String> proofStrings) {
         mp = new HashMap<>();
         this.proofStrings = proofStrings;
-        assumptions = new ArrayList<>();
-        proved = new ArrayList<>();
+//        assumptions = new ArrayList<>();
+        assumptions = new HashMap<>();
         proof = new ArrayList<>();
-        provedSet = new HashSet<>();
-        assumptionStrings.forEach(s -> assumptions.add(parse(s)));
+        proved = new HashMap<>();
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < assumptionStrings.size(); i++) {
+            Expression e = parse(assumptionStrings.get(i));
+            if (!assumptions.containsKey(e))
+                assumptions.put(parse(assumptionStrings.get(i)), i);
+        }
         proofStrings.forEach(s -> proof.add(parse(s)));
+        System.out.println((System.currentTimeMillis() - start) + "ms, parsed");
         result = new ArrayList<>();
     }
 
@@ -30,7 +36,7 @@ public class Validator {
 
     private void putInMp(Expression arg1, Expression arg2, int index) {
         if (!mp.containsKey(arg2)) {
-            mp.put(arg2, new ArrayList<>());
+            mp.put(arg2, new ArrayBox<>());
         }
         mp.get(arg2).add(new Pair<>(arg1, index));
     }
@@ -38,35 +44,35 @@ public class Validator {
     private void acceptFormula(int index, String from) {
         Expression e = proof.get(index);
         result.add("(" + (index + 1) + ") " + proofStrings.get(index) + " " + from);
-        proved.add(e);
-        provedSet.add(e);
+        proved.put(e, index);
         if (e instanceof BinExpression && ((BinExpression) e).op == Operator.IMPL) {
             putInMp(((BinExpression) e).left, ((BinExpression) e).right, index);
         }
     }
 
     public ArrayList<String> validate() {
+        long s = System.currentTimeMillis();
         proving:
         for (int i = 0; i < proof.size(); i++) {
             Expression e = proof.get(i);
-            int index;
+            Integer index;
             if ((index = searchFor(e, Axioms.axioms, false)) != -1) {
                 acceptFormula(i, "(Сх. акс. " + (index + 1) + ")");
                 continue;
-            } else if ((index = searchFor(e, assumptions, true)) != -1) {
+            } else if ((index = assumptions.get(e)) != null) {
                 acceptFormula(i, "(Предп. " + (index + 1) + ")");
                 continue;
             } else if (mp.containsKey(e)) {
                 for (Pair<Expression, Integer> from : mp.get(e)) {
-                    if (provedSet.contains(from.val1)) {
-                        acceptFormula(i, "(M.P. " + (proved.indexOf(from.val1) + 1) + ", " + (from.val2 + 1) + ")");
+                    if (proved.containsKey(from.val1)) {
+                        acceptFormula(i, "(M.P. " + (proved.get(from.val1) + 1) + ", " + (from.val2 + 1) + ")");
                         continue proving;
                     }
                 }
             }
             result.add("(" + (i + 1) + ") " + proofStrings.get(i) + " (Не доказано)");
         }
-
+        System.out.println((System.currentTimeMillis() - s) + "ms, validated");
         return result;
     }
 
