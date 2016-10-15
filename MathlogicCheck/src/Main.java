@@ -7,7 +7,7 @@ public class Main {
         long start = System.currentTimeMillis();
         BufferedReader in = new BufferedReader(new FileReader(new File("input.txt")));
         String header = in.readLine();
-        String axioms = header.substring(0, header.indexOf("|-")).replaceAll("\\s|-", "");
+        String axioms = header.substring(0, header.indexOf("|-")).replaceAll("\\s", "");
         ArrayList<String> assumptionList = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(axioms, ",");
         while (st.hasMoreTokens()) {
@@ -17,7 +17,7 @@ public class Main {
         ArrayList<String> proof = new ArrayList<>();
         String line;
         while ((line = in.readLine()) != null) {
-            proof.add(line.replaceAll("\\s|-", ""));
+            proof.add(line.replaceAll("\\s", ""));
         }
 
         System.out.println((System.currentTimeMillis() - start) + "ms, input read");

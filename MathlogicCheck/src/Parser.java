@@ -3,6 +3,8 @@ import expression.*;
 import java.util.HashMap;
 import java.util.Stack;
 
+import static expression.Operator.*;
+
 public class Parser {
 
     private final int LOWEST_PRIORITY = 3;
@@ -37,12 +39,12 @@ public class Parser {
         } else {
             Expression val = parseRec(level, prior - 1);
             skipSpaces();
-            while (!end() && isOperation(peekChar()) && getPriority(peekChar()) == prior) {
+            while (!end() && onOperator() && getPriority(peekOperator()) == prior) {
                 skipSpaces();
-                Operator op = getOperator(getChar());
+                Operator op = getOperator();
                 skipSpaces();
                 Expression next;
-                if (op.getAssoc() == Operator.Assoc.RIGHT) {
+                if (op.getAssoc() == Assoc.RIGHT) {
                     virtualBrackets.add(level);
                     next = parseRec(level + 1, LOWEST_PRIORITY);
                 } else {
@@ -68,14 +70,14 @@ public class Parser {
                 System.err.println("Error: no )");
             }
             return e;
-        } else if (peekChar() == '!') {
+        } else if (peekOperator() == NOT) {
             getChar();
-            return new UnExpression(Operator.NOT, parseRec(level + 1, prior));
+            return new UnExpression(NOT, parseRec(level + 1, prior));
         }
         System.err.println("Error: can't parse");
         return null;
     }
-
+    
     private Expression readVariable() {
         StringBuilder builder = new StringBuilder();
         while (!end() && (Character.isDigit(peekChar()) || Character.isLetter(peekChar()))) {
@@ -100,29 +102,45 @@ public class Parser {
         return expr[p++];
     }
 
-    private Operator getOperator(char op) {
-        switch (op) {
-            case '|':
-                return Operator.OR;
-            case '&':
-                return Operator.AND;
-            case '>':
-                return Operator.IMPL;
-            case '!':
-                return Operator.NOT;
-            default:
-                System.err.println("no such operator : " + op);
-                return null;
+    private Operator readOperator(boolean get) {
+        char op = peekChar();
+        int len = 1;
+        Operator result = null;
+        if (op == '|') {
+            result = OR;
+        } else if (op == '&') {
+            result = AND;
+        } else if (op == '!') {
+            result = NOT;
+        } else if (op == '-' && expr[p + 1] == '>') {
+            result = IMPL;
+            len = 2;
         }
+        if (result != null && get) {
+            p += len;
+        }
+        return result;
     }
 
-    private int getPriority(char op) {
+    private Operator peekOperator() {
+        return readOperator(false);
+    }
+
+    private Operator getOperator() {
+        return readOperator(true);
+    }
+    
+    private boolean onOperator() {
+        return peekOperator() != null;
+    } 
+
+    private int getPriority(Operator op) {
         switch (op) {
-            case '>':
+            case IMPL:
                 return 3;
-            case '|':
+            case OR:
                 return 2;
-            case '&':
+            case AND:
                 return 1;
             default:
                 System.err.println("no such operation : " + op);
